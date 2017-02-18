@@ -1,0 +1,3 @@
+FROM python:3.4-alpine
+MAINTAINER Carl Burks <crb02005@gmail.com>
+WORKDIR /app

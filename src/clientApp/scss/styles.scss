@@ -1,0 +1,7 @@
+.tester {
+    background: yellow
+}
+.tester-1 {
+    @extend .tester;
+    color: gold;
+}
