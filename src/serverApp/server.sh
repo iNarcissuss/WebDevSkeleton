@@ -1,3 +1,4 @@
 #/bin/sh
 pip3 install -r requirements.txt
-python api.py
+cd /
+python -m serverApp

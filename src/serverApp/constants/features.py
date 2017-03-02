@@ -1,0 +1,13 @@
+""" Constants for Dependency Injection """
+
+ROUTE_FEATURE = "routeFeature"
+FLASK_APP_FEATURE = "flaskAppFeature"
+REDIS_CONFIG_FEATURE = "redisconfig"
+CACHE_FEATURE = "redisFeature"
+DATABASE_CONFIG_FEATURE = "dbconfig"
+MESSAGE_QUEUE_CONFIG_FEATURE = "queueconfig"
+SESSION_FEATURE = "SessionFeature"
+ENGINE_FEATURE = "Engine"
+MESSAGE_QUEUE_SERVER_FEATURE = "MessageQueueServerFeature"
+MESSAGE_QUEUE_USER_FEATURE = "MessageQueueUserFeature"
+MESSAGE_QUEUE_PASSWORD_FEATURE = "MessageQueuePasswordFeature"

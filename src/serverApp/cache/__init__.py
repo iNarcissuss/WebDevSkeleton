@@ -1,0 +1,1 @@
+from .redis_provider import get_cache

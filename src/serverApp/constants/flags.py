@@ -1,0 +1,2 @@
+LOG_LEVEL = 1
+DEBUG_LEVEL = 2

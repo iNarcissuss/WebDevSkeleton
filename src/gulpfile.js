@@ -23,7 +23,7 @@ const chmod = require('gulp-chmod');
         self.source.favicon = self.source.path+"/favicon.ico";
         self.source.css.path = self.source.path + "css/**/*.css";
         self.source.scss.path = self.source.path + "scss/**/*.scss";
-        self.source.html.path = self.source.path + "**/*.html";
+        self.source.html.path = self.source.path + "**/*.+(html|mustache)";
         self.source.fonts.path = self.source.path + "fonts/**.*";
         self.source.javascript.path = self.source.path + 'js/**/*.js';
         self.source.all.typescript = self.source.path + 'ts/**/*.ts';
@@ -92,7 +92,9 @@ const chmod = require('gulp-chmod');
 
         gulp.task('typescript', function() {
             return tsProject.src() 
-                .pipe(tsProject()).js.pipe(minify())
+                .pipe(tsProject({
+                    allowJs: true
+                })).js.pipe(minify())
                 .pipe(chmod(0o755))
                 .pipe(gulp.dest(self.destination.javascript.path));
         });

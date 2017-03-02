@@ -12,10 +12,6 @@ services:
         volumes:
             -  "./src:/app"
         command: sh /app/build.sh
-        links:
-            - "web-service:ws"
-        depends_on:
-            - web-service
     web-service:
         build: 
             context: .
@@ -24,13 +20,19 @@ services:
         ports:
             - "5000:5000"
         tty: true
-        working_dir: /app
-        command: sh /app/server.sh
-#        command: sh /app/redisTest.sh
+        working_dir: /serverApp
+        command: sh /serverApp/server.sh
+        env_file:
+            - .env
         volumes:
-            -  "./src/serverApp:/app"
+            -  "./src/serverApp:/serverApp"
         links:
             - "data-cache"
+            - "database-server"
+        depends_on:
+            - web-build
+            - data-cache
+            - database-server
     data-cache:
         image: redis:alpine
         command: redis-server --bind 0.0.0.0 --appendonly yes --requirepass redis
@@ -42,12 +44,12 @@ services:
             -  "./src/redis/data:/var/lib/redis"
     #   links:
     #     - "database-server:db"
-    # database-server:
-    #     image: mariadb
-    #     command: mysqld --innodb-buffer-pool-size=20M
-    #     env_file:
-    #         - .env
-    #     volumes:
-    #         - "./src/mariaDB:/var/lib/mysql:rw"
-    #     ports:
-    #         - "3306:3306"
+    database-server:
+        image: mariadb
+        command: mysqld --bind-address=0.0.0.0 --innodb-buffer-pool-size=20M
+        env_file:
+            - .env
+        volumes:
+            - "./src/mariaDB:/var/lib/mysql:rw"
+        ports:
+            - "3306:3306"
