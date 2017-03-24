@@ -12,6 +12,17 @@ services:
         volumes:
             -  "./src:/app"
         command: sh /app/build.sh
+    # web-static:
+    #     image: "nginx:alpine"
+    #     tty: true
+    #     ports:
+    #         - "80:80"
+    #     environment:
+    #         - NGINX_PORT=80
+    #     volumes:
+    #         - "./src/dist/:/usr/share/nginx/html/"
+    #     depends_on:
+    #         - web-build
     web-service:
         build: 
             context: .

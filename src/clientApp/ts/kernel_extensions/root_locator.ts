@@ -1,9 +1,5 @@
-declare var kernel: skeleton.webapp.kernel;
-    
+var document;
 namespace skeleton.kernel_extensions {
-
-
-
     var scripts: [string];
     
     export class kernel_script_utilities{
@@ -32,6 +28,4 @@ namespace skeleton.kernel_extensions {
             }
         }
     }
-
-
 }

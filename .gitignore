@@ -7,3 +7,4 @@ src/mariaDB/*
 *.pyc
 *.wpu
 *.wpr
+src/clientApp/js/kernel\.config\.js

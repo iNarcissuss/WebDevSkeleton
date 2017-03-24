@@ -4,27 +4,47 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="js/kernel.config.js"></script>
+        <script src="js/google_loader.js"></script>
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css"href="css/styles.css">
         <link rel="shortcut icon" href="favicon.ico" />
         <link rel="icon" type="image/png" href="images/favicon.png" />
         <meta charset='utf-8' />
-    <title>Skeleton</title>
+        <title>Skeleton</title>
     </head>
     <body id="bind-container">
+        <script>
+            function onSignIn(g){
+                skeleton.security.sign_in(g);
+            }
+        </script>
         <div id="menu-container">
-            Menu goes here
+            <div class="login">
+                <div data-bind="visible:!user_manager.isSignedIn()">
+                    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+                </div>
+                <div data-bind="visible:user_manager.isSignedIn()">
+                
+                Welcome
+                <span data-bind="text:user_manager.name">
+                </span>.
+                <span >
+                    Not you?
+                    <a href="#" data-bind="click:skeleton.security.sign_out">Sign out</a>
+                </span>
+                <div>
+            </div>
         </div>
         <div id="content-container">
-            Nothing Loaded Yet
         </div>
         <!-- Scripts -->
+        <!--<script src="js/jslog.min.js"></script>-->
         <script src="js/jquery-3.1.1.js"></script>
         <script src="js/knockout-3.4.1.js"></script>
-        <script src="js/kernel.config.js"></script>
         <script src="js/mustache.js"></script>
         <script src="js/tsc.js"></script>
         <script src="js/bootstrap.min.js"></script>
-        <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>-->
+
     </body>
 </html>

@@ -1,3 +1,5 @@
-FROM python:3.4-alpine
+FROM python:3.5.3
 MAINTAINER Carl Burks <crb02005@gmail.com>
 WORKDIR /app
+ADD ./src/serverApp/requirements.txt /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt

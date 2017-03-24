@@ -1,5 +1,5 @@
 ///<reference path='base_view_model.ts' />
-///<reference path='../../typing/skeleton/skeleton.d.ts' />
+///<reference path='../../typing/skeleton/index.d.ts' />
 
 
 declare var kernel: skeleton.webapp.kernel;
@@ -10,17 +10,13 @@ namespace skeleton.viewmodel {
             constructor(){
                 super();
             }
+            on_widget_message(data:skeleton.model.widget){
+                    this.firstName(data.name);
+                    this.visitorCount(data.counter);
+            }
             on_initialized(routeData:skeleton.routing.route_request){
-                kernel.repo.requestPayload<skeleton.model.widget,skeleton.model.base>(
-                "",
-                {
-                    data: {}
-                },
-                (r:skeleton.model.widget)=>{
-                    this.firstName(r.name);
-                    this.visitorCount(r.counter);
-                })
-
+                kernel.socket_hub.subscribeMessage("widget",(data)=>this.on_widget_message);
+                kernel.socket_hub.publishMessage({"message_type":"widget"});
             }
         }
 }

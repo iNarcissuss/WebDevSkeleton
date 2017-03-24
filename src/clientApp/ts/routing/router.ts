@@ -1,9 +1,14 @@
-///<reference path='../../typing/skeleton/skeleton.d.ts' />
+///<reference path='../../typing/skeleton/index.d.ts' />
 namespace skeleton.routing {
+   export interface RouterOptions {
+       errorHandler: skeleton.error.IErrorHandlerProvider;
+       renderTarget: JQuery;
+   }
    export class router {
-
-        constructor(renderTarget: JQuery){
-            this._renderTarget = renderTarget;
+        _errorHandler: skeleton.error.IErrorHandlerProvider;
+        constructor(options: RouterOptions){
+            this._errorHandler = options.errorHandler;
+            this._renderTarget = options.renderTarget;
             this._currentRoute = ko.observable(document.location.href);
             this._currentRequest = ko.observable(this._parseRoute(this._currentRoute()));
             var setFromCurrent = ()=>{
@@ -89,7 +94,7 @@ namespace skeleton.routing {
                         /*data: rr.parameters,*/
                         success: handleData,
                         error: (error)=>{
-                            skeleton.error.handler(error); 
+                            this._errorHandler.getHandler()(error); 
                         }
                     }
                 );
