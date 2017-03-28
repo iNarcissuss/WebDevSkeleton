@@ -3,62 +3,39 @@ namespace skeleton.routing {
    export interface RouterOptions {
        errorHandler: skeleton.error.IErrorHandlerProvider;
        renderTarget: JQuery;
+       logger: skeleton.logger.ILogger;
+       route_parser: skeleton.routing.IRouteParser;
    }
    export class router {
         _errorHandler: skeleton.error.IErrorHandlerProvider;
+        _logger: skeleton.logger.ILogger;
+        _view_model_routes: {[id:string]:string};
         constructor(options: RouterOptions){
+            this._logger = options.logger;
             this._errorHandler = options.errorHandler;
             this._renderTarget = options.renderTarget;
             this._currentRoute = ko.observable(document.location.href);
-            this._currentRequest = ko.observable(this._parseRoute(this._currentRoute()));
+            this._currentRequest = ko.observable(options.route_parser.getRequest(this._currentRoute()));
+            this._views = new skeleton.cache.AsyncLazy<string>()
+            this._view_models = new skeleton.cache.AsyncLazy<skeleton.viewmodel.base_view_model>()
             var setFromCurrent = ()=>{
-                this._currentRequest(this._parseRoute(this._currentRoute()));
+                var request = options.route_parser.getRequest(this._currentRoute());
+                this._currentRequest(request);
+                this._currentViewModel= new skeleton.viewmodel[request.view_model_class]({
+                    logger: this._logger
+                });
             };
             var crSubscription = this._currentRoute.bind("change",setFromCurrent());
             setFromCurrent();
         }
-
+        _views: skeleton.cache.AsyncLazy<string>;
+        _view_models: skeleton.cache.AsyncLazy<skeleton.viewmodel.base_view_model>;
         _renderTarget: JQuery;
         _currentRoute: KnockoutObservable<string>;
         _origin: KnockoutObservable<skeleton.routing.route_information<skeleton.viewmodel.base_view_model>>;
         _currentRequest: KnockoutObservable<skeleton.routing.route_request>;        
         _currentViewModel: skeleton.viewmodel.base_view_model;        
         _history: KnockoutObservableArray<skeleton.routing.route_information<skeleton.viewmodel.base_view_model>>;
-        _views: {[id:string]:string}={};
-        // public registerRoute<T extends skeleton.viewmodel.base_view_model>(
-        //     route_hierarchy: string, 
-        //     view_model:T,
-        //     view_path:string){
-        //         if(this._routes[route_hierarchy]){
-        //             throw("You may not register a hierarchy more than once.");
-        //         }
-        //         this._routes[route_hierarchy] = view_model;
-        // }
-
-        _parseRoute(url: string):skeleton.routing.route_request{
-
-            var result = <skeleton.routing.route_request>{
-                parameters:{},
-                route_hierarchy:""            
-            };
-
-            var url_pieces = url.split("#");
-            if(url_pieces.length > 0){
-                var hierarchy_pieces = url_pieces[0].split("?");
-                result.route_hierarchy = hierarchy_pieces[0].replace(kernel.root_url,"");
-
-                if(hierarchy_pieces.length > 1){
-                    var parameters_pieces = hierarchy_pieces[1].split("&");
-                    parameters_pieces.forEach((s: string)=>{
-                        s.split("=");
-
-                    });
-                }
-            } 
-            
-            return result ;
-        };
-
         _navigate(route: skeleton.routing.route_request):void{
             //TODO:
         }
@@ -76,35 +53,23 @@ namespace skeleton.routing {
             }
         }
         _loadIn(rr: route_request,callback:(data:string)=>void):void{
-            this._currentViewModel = skeleton.routing.view_model_routes[rr.route_hierarchy];
-             var handleData = (data:string)=>{
-                var targetData = data;
-                if(rr.route_hierarchy.indexOf("mustache")>-1){
-                    //todo
-                    // mustache it.
-                    
-                }
-                this._renderTarget.html(targetData);
-                callback(targetData);
-            };
-            if(!(rr.route_hierarchy in this._views)){
+            this._views.get(rr.route_hierarchy, (key, internal_callback)=>{
                 $.ajax(
                     {
-                        url: skeleton.routing.view_routes[rr.route_hierarchy],
-                        /*data: rr.parameters,*/
-                        success: handleData,
+                        url:  "view/"+rr.view_url,
+                        data: rr.parameters,
+                        success: internal_callback,
                         error: (error)=>{
                             this._errorHandler.getHandler()(error); 
                         }
                     }
                 );
-            } else {
-                handleData(this._views[rr.route_hierarchy]);
-            }
+            },callback);
         }
         activate():void{
             this._removeBindings();
             this._loadIn(this._currentRequest(), (data:string)=>{
+                this._renderTarget.html(data); // TODO: handle templates 
                 this._currentViewModel.initialize(<any>this._currentRequest());
                 ko.applyBindings(this._currentViewModel,this._renderTarget[0]);                
             });

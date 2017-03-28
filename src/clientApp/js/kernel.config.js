@@ -1,7 +1,6 @@
-// This file should be dropped in
 var kernel = {
     config: {
-        site: {   
+        site: {
             views: {
                 "":"home.mustache"
             },
@@ -14,8 +13,8 @@ var kernel = {
             protocols: null
         },
         OAuth: {
-            client_id:"nicetry",
-            client_secret:"ditto"
+            client_id:"238289129311-qetjv4qruo4nbo2ssbea11uf8cs5n3mo.apps.googleusercontent.com",
+            client_secret:"J2PEJyCcbuzC5bCT-RORNnSf"
         }
 
     }

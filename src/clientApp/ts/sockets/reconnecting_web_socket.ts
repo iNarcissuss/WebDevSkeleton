@@ -67,7 +67,7 @@ namespace skeleton.sockets {
                     'message_type':'send', 
                     'url': this._url, 
                     'data':{
-                        'user_id_token':this._security.getToken(),
+                        'user_id_token':this._security.id_token(),
                         'data':data
                     }}),
                     tags: ["JSON"]

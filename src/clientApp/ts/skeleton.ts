@@ -54,7 +54,13 @@ $().ready(()=>{
     kernel.error_handler = new skeleton.error.error_handler_provider(kernel.logger);
     var router: skeleton.routing.router = new skeleton.routing.router({
         errorHandler: kernel.error_handler,
-        renderTarget: $("#content-container")
+        renderTarget: $("#content-container"),
+        logger: kernel.logger,
+        route_parser: new skeleton.routing.route_parser({
+            root_url:kernel.root_url,
+            routes:kernel.config.site.views,
+            view_model_routes: kernel.config.site.view_models
+        }),        
     });
     var menu: skeleton.viewmodel.menu = new skeleton.viewmodel.menu({
         user_manager: skeleton.security.getUserManager(),

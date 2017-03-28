@@ -79,15 +79,13 @@ import uuid
 class ClientKeeper(object):
 
 
-     def addClient(self, client):
-         self.clients[]
-
-         
+    def addClient(self, client):
+        self.clients.push(client)
 
 class ClientSocketApplication(WebSocketApplication):
     def on_open(self):
-        globals()["clients"] +=1
-        print("opening"+str(globals()["clients"]))
+        #globals()["clients"] +=1
+        #print("opening"+str(globals()["clients"]))
         # Obtain ClientID
         self.ws.send("echo")
 
