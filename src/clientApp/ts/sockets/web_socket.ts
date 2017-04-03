@@ -6,6 +6,7 @@ declare class WebSocket {
     send: (data:any)=>void;
     connect: ()=>void;
     close: ()=>void;
+    open: ()=>void;
     onopen: (data:any)=>void;
     onclose: (data:any)=>void;
     onmessage: (data:any)=>void;

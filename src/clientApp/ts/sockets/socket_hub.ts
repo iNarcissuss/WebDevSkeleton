@@ -14,30 +14,44 @@ namespace skeleton.sockets
            this.time = ko.observable(-1);
            this._logger = logger;
            this._socket = socket;
-           this._socket.onmessage =(data:any) => this.processRequest(data);
-           this._socket.onopen = (data:any) => this.sendRequests(data);
-           this._messages = ko.observableArray();
-        }
+           this.subscribeMessage("handshake", this.handshake);
+           this._socket.onmessage = (data:any) =>{
+                this.processResponse(data);
+           }
+        //    this._socket.onopen = (data:any) => this.sendRequests(data);
+        //    this._messages = ko.observableArray();
+    }
+       public handshake(data:any){
+        //TODO:
+
+       }
        public publishMessage(data:any){
-            this._messages.push(data);
+           if(typeof(data)!=="string"){
+               this._socket.send(JSON.stringify(data));
+           } else {
+               this._socket.send(data);
+           }
+                // this._messages.push(data);
        }
        public subscribeMessage(name:string, callback: (data:any)=>void){
             if(!(name in this._callbacks)){
                 this._callbacks[name] = <any>[];
             }
+            this._logger.log({message:"subscribeMessage  name:"+name,tags:[]})
             this._callbacks[name].push(callback);
        }
-       public sendRequests(data:any){
-           while(this._messages.length > 0){
-                this._socket.send(JSON.stringify(this._messages.shift()));
-           }
-       }
-       public processRequest(data:any){
-           this._socket.send(data);
-       }
+    //    public sendRequests(data:any){
+    //        while(this._messages.length > 0){
+    //             this._socket.send(JSON.stringify(this._messages.shift()));
+    //        }
+    //    }
+    //    public processRequest(data:any){
+    //        this._socket.send(data);
+    //    }
        public processResponse(data:any){
-           if('message_type' in data){
-                var payload = <skeleton.sockets.response>(data);
+           var innerData = JSON.parse(data.data);
+           if('message_type' in innerData){
+                var payload = <skeleton.sockets.response>(innerData);
                 if(payload.message_type in this._callbacks){
                     payload.errors.forEach((error)=>{
                         this._logger.error({
@@ -68,7 +82,7 @@ namespace skeleton.sockets
 
                 } else {
                         this._logger.error({
-                            message:JSON.stringify({"unsupported message":data}),
+                            message:JSON.stringify({"unsupported message":innerData}),
                             tags: [
                                 "JSON",
                                 "Repo",
@@ -80,7 +94,7 @@ namespace skeleton.sockets
 
            } else {
                this._logger.error({
-                   message: JSON.stringify(data),
+                   message: JSON.stringify(innerData),
                    tags: [
                        "JSON",
                        "invalid message",
@@ -88,6 +102,7 @@ namespace skeleton.sockets
                    ]
                })
            }
-       }
+             this._logger.log({"message":"end of processmessage",tags:[]});
+        }
     }
 }

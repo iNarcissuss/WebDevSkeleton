@@ -4,4 +4,6 @@ flask-cors
 redis
 SQLAlchemy
 pymysql
+gevent
 gevent-websocket
+pika

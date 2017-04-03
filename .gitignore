@@ -8,3 +8,5 @@ src/mariaDB/*
 *.wpu
 *.wpr
 src/clientApp/js/kernel\.config\.js
+
+src/clientApp/test\.html

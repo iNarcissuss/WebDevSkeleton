@@ -6,7 +6,6 @@
 ///<reference path='../typing/skeleton/index.d.ts' />
 ///<reference path='routing/router.ts' />
 ///<reference path='viewmodel/menu.ts' />
-///<reference path='routing/view_model_routes.ts' />
 ///<reference path='routing/view_routes.ts' />
 ///<reference path='kernel_extensions/root_locator.ts' />
 
@@ -14,7 +13,6 @@ declare var kernel: skeleton.webapp.kernel;
 
 declare var console;
 $().ready(()=>{
-
     var root_locator = new skeleton.kernel_extensions.kernel_script_utilities();
     root_locator.kernel_apply_script_info(kernel);
     kernel.logger = new skeleton.logger.ConsoleLogAdapter(console);
@@ -23,32 +21,31 @@ $().ready(()=>{
     // It should pass the token
     // The server should validate then terminate the socket for non-valid sockets
 
-    kernel.socket = new skeleton.sockets.ReconnectingSocket({
-        security: skeleton.security.getUserManager(),
-        logger: kernel.logger,
-        url: kernel.config.site.url,
-        reconnect_interval: kernel.config.reconnect_interval,
-        timeout_interval: kernel.config.reconnect_interval,
-        protocols: null,
-        events: {
-            on_open:()=>{
+    kernel.socket = new WebSocket(kernel.config.site.url); // new skeleton.sockets.ReconnectingSocket({
+    //     security: skeleton.security.getUserManager(),
+    //     logger: kernel.logger,
+    //     url: kernel.config.site.url,
+    //     reconnect_interval: kernel.config.reconnect_interval,
+    //     timeout_interval: kernel.config.reconnect_interval,
+    //     protocols: null,
+    //     events: {
+    //         on_open:()=>{
 
-            },
-            on_close:()=>{
+    //         },
+    //         on_close:()=>{
 
-            },
-            on_connecting:()=>{
+    //         },
+    //         on_connecting:()=>{
 
-            },
-            on_error:()=>{
+    //         },
+    //         on_error:()=>{
 
-            },
-            on_message:()=>{
+    //         },
+    //         on_message:()=>{
                 
-            }
-        }
-    })
-
+    //         }
+    //     }
+    // })
 
     kernel.socket_hub = new skeleton.sockets.socket_hub(kernel.logger, kernel.socket);
     kernel.error_handler = new skeleton.error.error_handler_provider(kernel.logger);
@@ -59,7 +56,8 @@ $().ready(()=>{
         route_parser: new skeleton.routing.route_parser({
             root_url:kernel.root_url,
             routes:kernel.config.site.views,
-            view_model_routes: kernel.config.site.view_models
+            view_model_routes: kernel.config.site.view_models,
+            default_route: kernel.config.default_route
         }),        
     });
     var menu: skeleton.viewmodel.menu = new skeleton.viewmodel.menu({

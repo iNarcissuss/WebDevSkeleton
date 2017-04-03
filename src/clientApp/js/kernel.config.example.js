@@ -1,6 +1,13 @@
 // This file should be dropped in
 var kernel = {
     config: {
+        default_route:{
+            url:"",
+            route_hierarchy:"",
+            view_url: "home.mustache",
+            view_model_class: "app_view_model",
+            parameters: {}
+        },
         site: {   
             views: {
                 "":"home.mustache"

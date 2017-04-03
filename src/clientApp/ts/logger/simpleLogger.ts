@@ -9,13 +9,13 @@ namespace skeleton.logger {
        }
        
        log(message:ILoggerMessageOptions){
-           this._console.log(message.message);
+           this._console.log(JSON.stringify(message));
        }
        error(message:ILoggerMessageOptions){
-            this._console.error(message.message);
+            this._console.info(JSON.stringify(message));
        }
        info(message: ILoggerMessageOptions){
-            this._console.info(message.message);
+            this._console.info(JSON.stringify(message));
        }
     }
 }

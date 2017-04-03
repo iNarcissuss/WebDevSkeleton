@@ -1,40 +1,7 @@
 #!/usr/bin/env python
 
-# import asyncio
-# import websockets
-
-# @asyncio.coroutine
-# def hello(websocket, path):
-#     name = yield from websocket.recv()
-#     print("< {}".format(name))
-
-#     greeting = "Hello {}!".format(name)
-#     yield from websocket.send(greeting)
-#     print("> {}".format(greeting))
-
-# start_server = websockets.serve(hello, 'localhost', 5000)
-
-# asyncio.get_event_loop().run_until_complete(start_server)
-# asyncio.get_event_loop().run_forever()
-
-# import asyncio
-# import datetime
-# import random
-# import websockets
-
-# @asyncio.coroutine
-# def time(websocket, path):
-#     while True:
-#         now = datetime.datetime.utcnow().isoformat() + 'Z'
-#         yield from  websocket.send(now)
-#         yield from  asyncio.sleep(random.random() * 3)
-
-# start_server = websockets.serve(time, '127.0.0.1', 5000)
-
-# asyncio.get_event_loop().run_until_complete(start_server)
-# asyncio.get_event_loop().run_forever()
-# import pika
-# import json
+#import pika
+import json
 # from features import IsInstanceOf
 # from features import HasMethods
 # from features import RequiredFeature
@@ -76,33 +43,91 @@ import uuid
 
 # Work in progress
 
-class ClientKeeper(object):
+class client(object):
+    token = None
+    def __init__(self):
+        self.token = str(uuid.uuid4())
 
-
-    def addClient(self, client):
-        self.clients.push(client)
+    def get_token(self):
+        return str(self.token)        
 
 class ClientSocketApplication(WebSocketApplication):
+    #all the clients
+    #self.ws.handler.server.clients.
     def on_open(self):
-        #globals()["clients"] +=1
-        #print("opening"+str(globals()["clients"]))
-        # Obtain ClientID
-        self.ws.send("echo")
+        current_client = client()
+        print("on_open for client %s" % (current_client.get_token(),) )
+        self.ws.handler.active_client.custom_client = current_client
+        self.ws.send(
+            json.dumps({
+                "client_id":current_client.get_token(),
+                "message_type":"handshake",
+                "data":{},
+                "warnings":[],
+                "errors":[]}))
+        self.broadcast_exclude_sender(json.dumps({"action":"joined","client_id":current_client.get_token()}), self.ws.handler.active_client)
 
     def on_message(self, message):
-        print("on_message")
+        current_client = self.ws.handler.active_client.custom_client
+        token = current_client.get_token()
+        print("on_message for client %s" % (token,))
         #Handle peer messages
-        print(message)
-        self.ws.send(message)
+        print("%s: %s" % (token, json.dumps(message)))
+        #self.ws.send()
+
+        # self.broadcast(json.dumps({
+        #     "message_received":message, 
+        #     "client_id":token
+        # }))
+
+        self.send_message(json.dumps({
+            "message_type":"widget",
+            "data":{
+                "firstName":"JoeBob",
+                "visitorCounter":999,
+            },
+            "errors":[],
+            "warnings":[]
+        }), [self.ws.handler.active_client])
+
+    def send_message(self, message, targets):
+        for target in targets:
+            target.ws.send(message)
+
+    def broadcast(self, message):
+        self.send_message(message, self.ws.handler.server.clients.values())
+
+    def broadcast_exclude_sender(self, message, sender):
+        sender_token = sender.custom_client.get_token()
+        self.send_message(message, filter( lambda c: c.custom_client.get_token() != sender_token,self.ws.handler.server.clients.values()))
 
     def on_close(self, reason):
-        # Remove ClientID
-        print("on_close")
+        current_client = self.ws.handler.active_client.custom_client
+        token = current_client.get_token()
+        print("on_close %s" % token)
         print(reason)
+        self.broadcast_exclude_sender(json.dumps({"action":"left","client_id":current_client.get_token()}), self.ws.handler.active_client)
 
-clients=ClientKeeper()
+#clients=ClientKeeper()
 
 WebSocketServer(
     ('', 5000),
     Resource({'/': ClientSocketApplication})
 ).serve_forever()
+
+# from geventwebsocket import WebSocketServer, WebSocketApplication, Resource
+
+# class EchoApplication(WebSocketApplication):
+#     def on_open(self):
+#         print("Connection opened")
+
+#     def on_message(self, message):
+#         self.ws.send(message)
+
+#     def on_close(self, reason):
+#         print(reason)
+
+# WebSocketServer(
+#     ('', 5000),
+#     Resource({'/': EchoApplication})
+# ).serve_forever()

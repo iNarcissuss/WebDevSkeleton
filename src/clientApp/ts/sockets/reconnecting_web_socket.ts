@@ -24,6 +24,7 @@ namespace skeleton.sockets {
         _security: skeleton.security.IUserManager;
         _queue: any[];
         constructor(options: IReconnectingSocketOptions){
+            this._queue = [];
             this._logger = options.logger;
             this._protocols = options.protocols;
             this._url = options.url;

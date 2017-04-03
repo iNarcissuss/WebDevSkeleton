@@ -15,12 +15,13 @@ namespace skeleton.routing {
             this._errorHandler = options.errorHandler;
             this._renderTarget = options.renderTarget;
             this._currentRoute = ko.observable(document.location.href);
-            this._currentRequest = ko.observable(options.route_parser.getRequest(this._currentRoute()));
+            this._currentRequest = ko.observable(options.route_parser.getRequest({url:this._currentRoute()}));
             this._views = new skeleton.cache.AsyncLazy<string>()
             this._view_models = new skeleton.cache.AsyncLazy<skeleton.viewmodel.base_view_model>()
             var setFromCurrent = ()=>{
-                var request = options.route_parser.getRequest(this._currentRoute());
+                var request = options.route_parser.getRequest({url:this._currentRoute()});
                 this._currentRequest(request);
+                
                 this._currentViewModel= new skeleton.viewmodel[request.view_model_class]({
                     logger: this._logger
                 });
