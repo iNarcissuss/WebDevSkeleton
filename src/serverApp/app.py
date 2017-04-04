@@ -65,7 +65,17 @@ class ClientSocketApplication(WebSocketApplication):
                 "data":{},
                 "warnings":[],
                 "errors":[]}))
-        self.broadcast_exclude_sender(json.dumps({"action":"joined","client_id":current_client.get_token()}), self.ws.handler.active_client)
+        ## this is a bad idea
+        ## every user doesn't need every other user's status
+        # self.broadcast_exclude_sender(
+        #     json.dumps({
+        #         "message_type":"joined",
+        #         "data":{
+        #             "client_id":current_client.get_token()
+        #             },
+        #         "errors":[],
+        #         "warnings":[]}), 
+        #     self.ws.handler.active_client)
 
     def on_message(self, message):
         current_client = self.ws.handler.active_client.custom_client

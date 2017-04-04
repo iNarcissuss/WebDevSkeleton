@@ -21,33 +21,36 @@ $().ready(()=>{
     // It should pass the token
     // The server should validate then terminate the socket for non-valid sockets
 
-    kernel.socket = new WebSocket(kernel.config.site.url); // new skeleton.sockets.ReconnectingSocket({
-    //     security: skeleton.security.getUserManager(),
-    //     logger: kernel.logger,
-    //     url: kernel.config.site.url,
-    //     reconnect_interval: kernel.config.reconnect_interval,
-    //     timeout_interval: kernel.config.reconnect_interval,
-    //     protocols: null,
-    //     events: {
-    //         on_open:()=>{
+    kernel.socket =new skeleton.sockets.ReconnectingSocket({
+        logger: kernel.logger,
+        url: kernel.config.site.url,
+        reconnect_interval: kernel.config.site.reconnect_interval,
+        timeout_interval: kernel.config.site.reconnect_interval,
+        protocols: null,
+        events: {
+            on_open:()=>{
 
-    //         },
-    //         on_close:()=>{
+            },
+            on_close:()=>{
 
-    //         },
-    //         on_connecting:()=>{
+            },
+            on_connecting:()=>{
 
-    //         },
-    //         on_error:()=>{
+            },
+            on_error:()=>{
 
-    //         },
-    //         on_message:()=>{
+            },
+            on_message:()=>{
                 
-    //         }
-    //     }
-    // })
+            }
+        }
+    })
 
-    kernel.socket_hub = new skeleton.sockets.socket_hub(kernel.logger, kernel.socket);
+    kernel.socket_hub = new skeleton.sockets.socket_hub({
+        logger:kernel.logger,
+        socket: kernel.socket,
+        security: skeleton.security.getUserManager()
+    });
     kernel.error_handler = new skeleton.error.error_handler_provider(kernel.logger);
     var router: skeleton.routing.router = new skeleton.routing.router({
         errorHandler: kernel.error_handler,
@@ -65,7 +68,6 @@ $().ready(()=>{
         selector: $("#menu-container")
     });
    router.activate();
-
 
 
 });

@@ -3,35 +3,58 @@
 declare var kernel: skeleton.webapp.kernel;
 namespace skeleton.sockets
 {
+    const HANDSHAKE_MESSAGE = "handshake"; 
+    export interface ISocketHubOptions {
+        logger: skeleton.logger.ILogger,
+        socket: ReconnectingSocket,
+        security: skeleton.security.IUserManager;
+    }
     export class socket_hub {
         time: KnockoutObservable<number>;
         _logger: skeleton.logger.ILogger;
-        _socket: WebSocket;
+        _socket: ReconnectingSocket;
         _messages: KnockoutObservableArray<any>;
         _callbacks: {[id:string]:any[]}
-        constructor(logger:skeleton.logger.ILogger, socket: WebSocket){
+        _security: skeleton.security.IUserManager;
+
+        constructor(options: ISocketHubOptions){
+            this._security = options.security;
            this._callbacks = {};
            this.time = ko.observable(-1);
-           this._logger = logger;
-           this._socket = socket;
-           this.subscribeMessage("handshake", this.handshake);
-           this._socket.onmessage = (data:any) =>{
+           this._logger = options.logger;
+           this._socket = options.socket;
+           this.subscribeMessage(HANDSHAKE_MESSAGE, this.handshake);
+           this._socket.subscribe_event("on_message", (data:any) =>{
                 this.processResponse(data);
-           }
-        //    this._socket.onopen = (data:any) => this.sendRequests(data);
-        //    this._messages = ko.observableArray();
+           });
     }
        public handshake(data:any){
         //TODO:
 
        }
-       public publishMessage(data:any){
-           if(typeof(data)!=="string"){
-               this._socket.send(JSON.stringify(data));
-           } else {
-               this._socket.send(data);
-           }
-                // this._messages.push(data);
+       private _publishMessage(message:any){
+                this._socket.send(JSON.stringify(message));
+       }
+       private publishUserMessage(message_type: string, data:any){
+                this._publishMessage({
+                   "message_type": message_type,
+                   'user_id_token':this._security.id_token(),
+                   "data": data
+                });
+       }
+       private publishAnonMessage(message_type: string, data:any){
+                 this._publishMessage({
+                   "message_type": message_type,
+                   "data": data
+                });
+      }
+       public publishMessage(message_type: string, data:any){
+                if(this._security.isSignedIn()){
+                    this.publishUserMessage(message_type, data);
+                } else {
+                    /* TODO: confirm security */
+                    this.publishAnonMessage(message_type, data);
+                }
        }
        public subscribeMessage(name:string, callback: (data:any)=>void){
             if(!(name in this._callbacks)){
@@ -40,14 +63,6 @@ namespace skeleton.sockets
             this._logger.log({message:"subscribeMessage  name:"+name,tags:[]})
             this._callbacks[name].push(callback);
        }
-    //    public sendRequests(data:any){
-    //        while(this._messages.length > 0){
-    //             this._socket.send(JSON.stringify(this._messages.shift()));
-    //        }
-    //    }
-    //    public processRequest(data:any){
-    //        this._socket.send(data);
-    //    }
        public processResponse(data:any){
            var innerData = JSON.parse(data.data);
            if('message_type' in innerData){

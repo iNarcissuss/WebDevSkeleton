@@ -13,7 +13,7 @@ namespace skeleton.sockets {
         _forced_close = false;
         _timeout_interval = 2000;
         _reconnect_interval = 1000;
-        _ready_state: any;
+        public readyState: number;
         _timed_out = false;
         _logger: skeleton.logger.ILogger;
         _ws: WebSocket;
@@ -21,7 +21,6 @@ namespace skeleton.sockets {
         _reconnect_attempt: boolean;
         _events: IReconnectingSocketEvents; 
         _protocols: string[];
-        _security: skeleton.security.IUserManager;
         _queue: any[];
         constructor(options: IReconnectingSocketOptions){
             this._queue = [];
@@ -31,7 +30,9 @@ namespace skeleton.sockets {
             this._events = options.events;
             this._timeout_interval = options.timeout_interval;
             this._reconnect_interval = options.reconnect_interval;
-            this._security = options.security;
+        }
+        subscribe_event(name, callback:any){
+            this._events[name] =callback;
         }
         _on_open(event) {
             if(this._events.on_open){
@@ -58,25 +59,29 @@ namespace skeleton.sockets {
                 this._events.on_error(event);
             }
         };
-        _wait_until_on_ready(data){
-            this._queue.push(data);
+        _wait_until_true(condition: ()=>boolean, interval: number, isTrue:()=>void, isFalse:()=>void){
+            if(condition()){
+                isTrue();
+            } else {
+                window.setTimeout(isFalse,interval);
+            }
+        }
+        _send(data){
+            this._ws.send(data);
         }
         send(data) {
-            if(this._ws && this._security.isSignedIn()){
-                this._logger.log({message:JSON.stringify({
-                    source:'ReconnectingSocket',
-                    'message_type':'send', 
-                    'url': this._url, 
-                    'data':{
-                        'user_id_token':this._security.id_token(),
-                        'data':data
-                    }}),
-                    tags: ["JSON"]
-                });
-                this._ws.send(data);
-            } else {
-                this._wait_until_on_ready(data);
-            }
+            this._wait_until_true(()=>{
+                return this._ws && this._ws.readyState ===1; 
+            }, 
+            1000,
+            ()=>{
+                this._send(data);
+            },
+            ()=>{
+                if(typeof(this._ws)==="undefined"){
+                    this.connect();
+                }
+                this.send(data);});
         };
         onopen(data:any){
             this._on_open(data);
@@ -85,7 +90,7 @@ namespace skeleton.sockets {
             this._on_close(data);
         }
         onmessage(data:any){
-            this._on_message(data);
+           this._on_message(data);
         }
         onerror(data:any){
             this._on_error(data);
@@ -120,7 +125,7 @@ namespace skeleton.sockets {
                         tags: ["JSON"]
                     });
                 
-                this._ready_state = WebSocket.OPEN;
+                this.readyState = WebSocket.OPEN;
                 this._reconnect_attempt = false;
                 this._on_open(event);
         };
@@ -128,10 +133,10 @@ namespace skeleton.sockets {
             window.clearTimeout(this._timer_timeout);
                 this._ws = null;
                 if (this._forced_close) {
-                    this._ready_state = WebSocket.CLOSED;
+                    this.readyState = WebSocket.CLOSED;
                     this._on_close(event);
                 } else {
-                    this._ready_state = WebSocket.CONNECTING;
+                    this.readyState = WebSocket.CONNECTING;
                     this._on_connecting(event);
                     if (!this._reconnect_attempt && !this._timed_out) {
                         this._logger.log({message:JSON.stringify({
@@ -149,13 +154,13 @@ namespace skeleton.sockets {
                 }
         };
         _ws_on_message(event){
-        this._logger.log({message:JSON.stringify({
+           this._logger.log({message:JSON.stringify({
                 source:'ReconnectingSocket',
                 'message_type':'onmessage', 
                 'url': this._url}),
                 tags: ["JSON"]
             });
-            this._on_message(event);
+            this.onmessage(event);
         };
         _ws_on_error(event){
         this._logger.log({message:JSON.stringify({
@@ -180,10 +185,10 @@ namespace skeleton.sockets {
                 tags: ["JSON",
                 "05d5ccc8-59bb-4ebe-9186-86584ec85e49"]
             });
-            this._ws.onopen = (event)=>this._ws_on_open; 
-            this._ws.onclose = (event)=>this._ws_on_close;
-            this._ws.onmessage = (event)=> this._ws_on_message;
-            this._ws.onerror = (event)=> this._ws_on_error;
+            this._ws.onopen = (event)=>{this._ws_on_open(event);}; 
+            this._ws.onclose = (event)=>{this._ws_on_close(event);};
+            this._ws.onmessage = (event)=>{this._ws_on_message(event);};
+            this._ws.onerror = (event)=>{this._ws_on_error(event)};
             this._timer_timeout = window.setTimeout(()=> this._timed_out_tick, this._timeout_interval);
         }
         refresh() {

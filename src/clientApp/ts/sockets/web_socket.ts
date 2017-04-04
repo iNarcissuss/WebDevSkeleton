@@ -3,10 +3,10 @@ declare class WebSocket {
     static OPEN: any;
     static CLOSED: any;
     static CONNECTING: any;
+    readyState: number;
     send: (data:any)=>void;
     connect: ()=>void;
     close: ()=>void;
-    open: ()=>void;
     onopen: (data:any)=>void;
     onclose: (data:any)=>void;
     onmessage: (data:any)=>void;

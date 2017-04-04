@@ -17,7 +17,7 @@ namespace skeleton.viewmodel {
             } 
             on_initialized(routeData:skeleton.routing.route_request){
                 kernel.socket_hub.subscribeMessage("widget",(data)=>{this.on_widget_message(data);});   
-                kernel.socket_hub.publishMessage({"message_type":"widget"});
+                kernel.socket_hub.publishMessage("widget",{});
             }
         }
 }
